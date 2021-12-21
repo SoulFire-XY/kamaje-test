@@ -10,11 +10,11 @@ A great Discord Bot With Many Functions Such As:
   - Welcomes With Embed Message
   - Embed Will Contain Images But Cannot be Modified or Removed.
 - [ ] Giveaways
-- [ ] Levelling
+- [x] Levelling
 - [ ] Economy
   - [x] Bal , Beg
   - Give , Transfer , Steal
-  - Bank : deposit , withdraw , steal
+  - [x] Bank : deposit , withdraw 
   - Shop : sell , buy , gamble , roll dice
 
 読んでくれてありがとう。
