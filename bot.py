@@ -1,5 +1,6 @@
 #Modules
 import os
+from typing import final
 from discord import user
 from discord import colour
 from discord.colour import Color
@@ -62,7 +63,7 @@ async def balance(ctx):
     wallet_amt = users[str(user.id)]["wallet"]
     bank_amt = users[str(user.id)]["bank"] 
 
-    em = discord.Embed(title = f"{ctx.author.name}'s Balance", Color = discord.Color.blurple)
+    em = discord.Embed(title = f"{ctx.author.name}'s Balance", Color = discord.Color.gold)
     em.add_field( name = "wallet", value = wallet_amt)
     em.add_field( name = "Bank Balance", value = bank_amt)
 
@@ -117,17 +118,100 @@ async def withdraw(ctx, amount = None,):
         await ctx.send("Amount must be Positive")
         return
 
-    await update_bank(ctx.author, -1 * amount, "bank")
     await update_bank(ctx.author, amount)
+    await update_bank(ctx.author, -1 * amount, "bank")
 
     await ctx.send(f"U withdrew {amount} coins!")
+
+@client.command(aliases =["dep"])
+async def deposit(ctx, amount = None,):
+    await open_account(ctx.author)
+
+    if amount == None:
+        await ctx.send("Please enter the Amount")
+        return
+
+    bal = await update_bank(ctx.author)
+
+    amount = int(amount)
+    if amount>bal[0]:
+        await ctx.send("U dont have That Much Money")
+        return
+
+    if amount<0:
+        await ctx.send("Amount must be Positive")
+        return
+
+    await update_bank(ctx.author, -1 * amount)
+    await update_bank(ctx.author, amount, "bank")
+
+    await ctx.send(f"U deposited {amount} coins!")
+
+@client.command()
+async def send(ctx,member: discord.Member, amount = None):
+    await open_account(ctx.author)
+    await open_account(member)
+
+    if amount == None:
+        await ctx.send("Please enter the Amount")
+        return
+
+    bal = await update_bank(ctx.author)
+
+    amount = int(amount)
+    if amount>bal[1]:
+        await ctx.send("U dont have That Much Money")
+        return
+
+    if amount<0:
+        await ctx.send("Amount must be Positive")
+        return
+
+    await update_bank(ctx.author, -1 * amount, "bank")
+    await update_bank(member, amount, "bank")
+
+    await ctx.send(f"Transaction Complete! \nU Sent {amount} coins to {member}!")
+
+@client.command()
+async def slots(ctx, amount = None):
+    await open_account(ctx.author)
+
+    if amount == None:
+        await ctx.send("Please enter the Amount")
+        return
+
+    bal = await update_bank(ctx.author)
+
+    amount = int(amount)
+    if amount>bal[0]:
+        await ctx.send("U dont have That Much Money")
+        return
+
+    if amount<0:
+        await ctx.send("Amount must be Positive")
+        return
+
+    final = []
+    for i in range(3):
+        a = random.choice(["X", "T", "O"])
+
+        final.append(a)
+
+    await ctx.send(str(final))
+
+    if final[0] == final[1] or final[0] == final[2] or final[2] == final[1]:
+        await update_bank(ctx.author, 2 * amount)  
+        await ctx.send("You Won!")   
+    else:
+        await update_bank(ctx.author, -1 * amount)
+        await ctx.send("You Lost!")        
 
 @client.command()
 async def help(ctx):
 
     emhelp = discord.Embed(title = "Kamaje || Commands ◈ Support ",
     description="This message Contains all the Command present in the bot.",
-    color=discord.Color.dark_gold())
+    color=discord.Color.dark_gold() )
     emhelp.add_field(name= f"{prefix}help", value="Shows this message", inline= False)
     emhelp.add_field(name= "Economy", value= f"{prefix}help eco", inline= True)
     emhelp.add_field(name= "Fun Commands", value= f"{prefix}help fun", inline= True)
@@ -151,7 +235,23 @@ async def level(ctx, member: discord.Member = None):
         lvl = users[str(id)]['level']
         await ctx.send(f'{member.mention} is on **Level {lvl}!**')
 
-@client.command()
+@client.command(aliases = ['steal'])
+async def rob(ctx,member: discord.Member):
+    await open_account(ctx.author)
+    await open_account(member)
+
+    bal = await update_bank(member)
+
+    earned = random.randrange(0, bal[0])
+
+    if bal[0] < 1000:
+        await ctx.send("They dont have That Much Money! \nAnd Not worth it too!")
+        return
+
+    await update_bank(ctx.author, earned)
+    await update_bank(member, -1 * earned)
+
+    await ctx.send(f"U Robbed {earned} coins from {member}")
 
 # Helper Functions --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
