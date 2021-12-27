@@ -1,4 +1,5 @@
 #Modules
+import datetime
 import os
 from typing import final
 from discord import user
@@ -13,39 +14,59 @@ from discord.ext import commands
 import random
 import asyncio
 import logging
+import time
 
 # Client Delcaration and Events and Stuff ---------------------------------------------------------------------------------------------------------------------------------------------
 os.chdir("D:\\CodingGames\Coding Files\\Python\\Bot maybe")
 prefix = "k."
 Intents = discord.Intents().all()
-client = commands.Bot(command_prefix = prefix, help_command= None, activity = discord.Streaming(name="Conquering the Hell of ! │ k.help", url="https://www.twitch.tv/zfiresouls"), intent = Intents)
+client = commands.Bot(command_prefix = prefix, help_command= None, intent = Intents)
 
 @client.event
 async def on_ready():
+    for guild in client.guilds:
+        print(f'Server name: {guild.name}\nServer id: {guild.id}\nMember count: {guild.member_count}')
+        print('----------------')
     print('We have logged in as {0.user}'.format(client))
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"Conquering the Hell of {str(len(client.guilds))} servers! │ k.help"))
 
 @client.event
 async def on_member_join(member):
-  with open('users.json', 'r') as f:
+  with open('users.json', 'r') as f:                
     users = json.load(f)
 
   await update_data(users, member)
 
   with open('users.json', 'w') as f:
     json.dump(users, f, indent=4)
-#-#===== Welcomer ====================================================================================================================
-#Not Completed 
+
 @client.event
-async def on_member_join(member, ):
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send('Missing required argument.')
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You dont have the permission to do that. :eyes:")
 
-    channel = await client.get_channel(welchannel)
+@client.event
+async def on_guild_join(guild):
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"Conquering the Hell of {str(len(client.guilds))} servers! │ k.help"))
 
-    embed = discord.Embed(title = f"🎊Welcome {member} To The Server!", description= f"A new Wild {member} just joined the server.🎊\n🎉We hope u will have a great time here.🎉")
-    embed.set_footer("Made By Someone who cares for you.")
-    embed.timestamp()
-    embed.thumbnail(url = member.avatar_url)
+@client.event
+async def on_guild_remove(guild):
+    await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"Conquering the Hell of {str(len(client.guilds))} servers! │ k.help"))
+#-#===== Welcomer ====================================================================================================================
 
-    await channel.send(embed=embed)
+# @client.event
+# async def on_member_join(member, ):
+
+#     channel = await client.get_channel(welchannel)
+
+#     embed = discord.Embed(title = f"🎊Welcome {member} To The Server!", description= f"A new Wild {member} just joined the server.🎊\n🎉We hope u will have a great time here.🎉")
+#     embed.set_footer("Made By Someone who cares for you.")
+#     embed.timestamp()
+#     embed.thumbnail(url = member.avatar_url)
+
+#     await channel.send(embed=embed)
 
 #-#===================================================================================================================================
 @client.event
@@ -64,12 +85,45 @@ async def on_message(message):
     await client.process_commands(message)
 
 # Command -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+@client.command(aliases=['8ball'])
+async def _8ball(ctx, *, question):
+    responses = [
+            "no?????",
+            "When will manage you grow a braincell, yes",
+            "You stoopid!, of course not",
+            "lol no",
+            "nope!",
+            "Absolutely!",
+            "As I see it, yes.",
+            "Most likely.",
+            "Yes.",
+            "Idfk",
+            "Try again",
+            "Not today.",
+            "I\'m not very sure, but I think the answer is no.",
+            "I\'m not very sure, but I think the answer is yes!",
+            "brain.exe stopped responding.",
+            "Ask again later.",
+            "Better not tell you now.",
+            "Cannot predict now.",
+            "Concentrate and ask again.",
+            "Don't count on it.",
+            "My reply is nopee.",
+            "My sources say n o.",
+            "Outlook not so good.",
+            "Its a secret >:]",
+            "Yare Yare Daze",
+            "Drink your Milk and Ask Again"
+    ]
+    ballEmbed = discord.Embed(title=f':8ball: {question}', description=f'{random.choice(responses)}')
+    await ctx.send(embed=ballEmbed)
 
-@client.command() #Not completed underdevelopment
-async def setchannel(ctx, channel = None):
-    lists = await get_channel_data()
-
-
+@client.command()
+async def ping(ctx):
+        ping = random.randrange(40324, 3291423040)
+        await ctx.send(f'Bot Ping/Latency is {ping}ms')
+        time.sleep(3)
+        await ctx.send(f'Just kidding Latency is {round(client.latency * 1000)}ms')
 
 @client.command()
 async def avatar(ctx, member: discord.Member= None):
@@ -79,10 +133,27 @@ async def avatar(ctx, member: discord.Member= None):
     icon_url = member.avatar_url
 
     avatarEmbed = discord.Embed(title= f"{member}'s Avatar", color= discord.Color.blurple())
-    avatarEmbed.setimage(url = f"{icon_url}")
-    avatarEmbed.timestamp = ctx.member.created_at
+    avatarEmbed.set_image(url = f"{icon_url}")
 
     await ctx.send(embed = avatarEmbed)
+
+@client.command()
+@commands.has_permissions(kick_members=True)
+async def kick(ctx, member: discord.Member, *, reason=None):
+    await member.kick(reason=reason)
+    await ctx.send(f'User {member} has kicked successfully.')
+
+@client.command(pass_context=True, aliases=['purge'])
+@commands.has_permissions(administrator=True)
+async def clear(ctx, limit: int):
+    await ctx.channel.purge(limit=limit)
+    await ctx.send('Cleared by {}'.format(ctx.author.mention))
+    await ctx.message.delete()
+@clear.error
+async def clear_error(ctx,error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You can not do that!")
+
 
 @client.command(aliases =["bal"])
 async def balance(ctx):
@@ -256,21 +327,36 @@ async def help(ctx):
 @client.command(aliases=["mod"])
 async def moderation(ctx):
     emmod = discord.Embed(title = "Kamaje || Commands ◈ Support", description = "Moderation Commands", color=discord.Color.blurple())
-    emmod.add_field( name = "Empty", value = "We are sorry but Moderation commands have not been added yet.",)
+    emmod.add_field( name = f"{prefix}kick <user>", value = "Kick the ||ass|| of the user out of the server.", inline= False)
 
     await ctx.send(embed = emmod)
+
+@client.command(aliases=["lvl"])
+async def leveling(ctx):
+    emlvl = discord.Embed(title = "Kamaje || Commands ◈ Support", description = "Leveling Commands", color=discord.Color.blurple())
+    emlvl.add_field( name = f"{prefix}level", value = "Shows your current Level and Exp", inline= False)
+    emlvl.add_field( name = f"{prefix}rank <user>", value = "Shows the mentioned user's current Level and Exp", inline= False)
+
+    await ctx.send(embed = emlvl)
 
 @client.command(aliases=["eco"])
 async def economy(ctx):
     emeco = discord.Embed(title = "Kamaje || Commands ◈ Support", value = "Economy Commands", color=discord.Color.blurple())
-    emeco.add_field( name = "k.bal", value = "shows your current wallet balance and bank balance.")
-    emeco.add_field( name = "k.rob <member>", value = "Robs Some coins from their wallet and add to your. If you are Lucky u will rob their whole wallet!")
-    emeco.add_field( name = "k.with <amount>", value = "Withdraws the amount of coins from your bank")
-    emeco.add_field( name = "k.dep <amount>", value = "Deposits the amount of coins to your bank")
-    emeco.add_field( name = "k.slots <amount>", value = "a minigame within the bot which can either add the double the coins amount to your bank or rmeove the amount of coins from your bank. Depends on your Luck!")
-    emeco.add_field( name = "k.beg", value = "Gives your Some Coins")
+    emeco.add_field( name = "k.bal", value = "shows your current wallet balance and bank balance.", inline= False)
+    emeco.add_field( name = "k.rob <member>", value = "Robs Some coins from their wallet and add to your. If you are Lucky u will rob their whole wallet!", inline= False)
+    emeco.add_field( name = "k.with <amount>", value = "Withdraws the amount of coins from your bank", inline= False)
+    emeco.add_field( name = "k.dep <amount>", value = "Deposits the amount of coins to your bank", inline= False)
+    emeco.add_field( name = "k.slots <amount>", value = "a minigame within the bot which can either add the double the coins amount to your bank or rmeove the amount of coins from your bank. Depends on your Luck!", inline= False)
+    emeco.add_field( name = "k.beg", value = "Gives your Some Coins", inline= False)
 
     await ctx.send(embed = emeco)
+
+@client.command(aliases=["sed"])
+async def sad(ctx):
+    emmod = discord.Embed(title = f"{ctx.author.name} Is sed😢!", description = "Dude Dont be Sed. If No one cares for You then I am here. \nAlso U dOnT kNoW wHaT kArLsOn Is?", color=discord.Color.blurple())
+    emmod.add_field( name = "Useful Tip 1", value = "Drink **m i l k**🥛")
+    emmod.add_field( name = "Useful Tip 2", value = "Add me to your Server [Click here To Invite!(●ˇ∀ˇ●)](https://rb.gy/1hlww4)")
+    await ctx.send(embed = emmod)
 
 @client.command(aliases = ['rank'])
 async def level(ctx, member: discord.Member = None):
@@ -279,13 +365,15 @@ async def level(ctx, member: discord.Member = None):
         with open('users.json', 'r') as f:
             users = json.load(f)
         lvl = users[str(id)]['level']
-        await ctx.send(f'You are at **Level {lvl}!**')
+        exp = users[str(id)]['experience']
+        await ctx.send(f'You are at **Level {lvl} and Exp : {exp}**')
     else:
         id = member.id
         with open('users.json', 'r') as f:
             users = json.load(f)
         lvl = users[str(id)]['level']
-        await ctx.send(f'{member.mention} is on **Level {lvl}!**')
+        exp = users[str(id)]['experience']
+        await ctx.send(f'{member.mention} is on **Level {lvl} and Exp : {exp}!**')
 
 @client.command(aliases = ['steal'])
 async def rob(ctx,member: discord.Member):
@@ -363,24 +451,6 @@ async def level_up(users, user, message):
     if lvl_start < lvl_end:
         await message.channel.send(f'{user.mention} has reached level {lvl_end}')
         users[f'{user.id}']['level'] = lvl_end
-
-async def get_channel_data():
-    with open("wel-channel.json", "w") as f:
-        channels = json.load(f)
-
-    return channels
-
-async def updata_channel(channel):
-    list = await get_channel_data()
-
-    if str(channel.id) in list:
-        return False    
-    else:
-        list[str(channel.id)] = {}
-
-    with open("wel-channel.json", "w") as f:
-        json.dump(list,f)
-    return True 
 
 # Getting Token -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 load_dotenv()
