@@ -6,7 +6,7 @@ Discord Bot Made with Lots of Love and Care For Everyone to Use.
 A great Discord Bot With Many Functions Such As:
 次のような多くの機能を備えた素晴らしいDiscordボット
 
-- [x] Welcomer
+- [ ] Welcomer
   - Welcomes With Embed Message
   - Embed Will Contain Images But Cannot be Modified or Removed.
 - [ ] Giveaways
