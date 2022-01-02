@@ -13,9 +13,10 @@ A great Discord Bot With Many Functions Such As:
 - [x] Levelling
 - [ ] Economy
   - [x] Bal , Beg 
-  - [x] Give , Transfer , Steal
+  - [x] Give , Transfer , Steal/rob
   - [x] Bank : deposit , withdraw
   - Shop : sell , buy , gamble , roll dice
+
 
 読んでくれてありがとう。
 Thank You For Reading.
